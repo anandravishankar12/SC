@@ -3,9 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-
-// HELPER FUNCTIONS
-// Print an array of floats in [,,] format
 void printFloatArray(float *arr, int len){
 	printf("[");
 	for (int i = 0; i < len -1; ++i) {
@@ -16,7 +13,6 @@ void printFloatArray(float *arr, int len){
 	printf("\n");	
 }
 
-// Print an array of unsigned ints in [,,] format
 void printUnsignedArray(unsigned *arr, int len){
 	printf("[");
 	for (int i = 0; i < len -1; ++i) {
@@ -27,7 +23,7 @@ void printUnsignedArray(unsigned *arr, int len){
 	printf("\n");	
 }
 
-// Print an array of ints in [,,] format
+
 void printArray(int *arr, int len){
 	printf("[");
 	for (int i = 0; i < len -1; ++i) {
@@ -39,7 +35,7 @@ void printArray(int *arr, int len){
 }
 
 
-// A simple helper function to compute the difference between to points in time
+
 double time_diff(struct timeval x , struct timeval y){
 	double x_ms , y_ms , diff;
 	 
@@ -51,7 +47,7 @@ double time_diff(struct timeval x , struct timeval y){
 	return diff;
 }
 
-// A simple helper function to reset two arrays with random values
+
 void resetTestData(float *floatArr, int lenFloats, int *intArr, int lenInts){
 	for (int i = 0; i < lenFloats; i++){
 		floatArr[i] = (float)rand()/(float)(RAND_MAX/1.0);
@@ -62,7 +58,7 @@ void resetTestData(float *floatArr, int lenFloats, int *intArr, int lenInts){
 }
 
 
-// returns the tile indicies corresponding to the floats and ints
+
 void getFeaturesNorm(float **prototypes, int numPrototypes, float *floats, int lenFloats, int *ints, int lenInts, int numCoordinates, float threshold, int *features) {
 	
 	for (int i = 0; i < numPrototypes; i++) {
@@ -109,7 +105,6 @@ __global__ void calcFeatures(float *d_prototypes, float *d_floats, int lenFloats
 
 }
 
-// TODO finish this
 void parallel_getFeaturesActivationRadii(int numPrototypes, int numCoordinates, float *d_prototypes, float *h_floatArr, float *d_floats, int lenFloats, int *h_intArr, int *d_ints, int lenInts, float *d_activationRadii, int *d_features, int *h_features){
 
 	cudaMemset(d_features, 0xF, numPrototypes*sizeof(int)); 
@@ -124,7 +119,6 @@ void parallel_getFeaturesActivationRadii(int numPrototypes, int numCoordinates, 
 }
 
 
-// returns the tile indicies corresponding to the floats and ints
 void getFeaturesActivationRadii(int numPrototypes, int numCoordinates, float *prototypes,float *floats, int lenFloats, int *ints, int lenInts, float *activationRadii, int *features) {
 
 
@@ -162,10 +156,6 @@ void getFeaturesActivationRadii(int numPrototypes, int numCoordinates, float *pr
 
 int main(int argc, char ** argv) {
 
-	// Use random other than 1
-	// srand ( time(NULL) );
-
-	// not testing ints so set it to length 0
 	int h_intArr[0] = {};
 	int lenInts = 0;
 
@@ -227,23 +217,18 @@ int main(int argc, char ** argv) {
 
 			for (int trial = 0; trial < numTrials; trial++){
 
-				// reset float array
 				resetTestData(h_floatArr, lenFloats, h_intArr, lenInts);
 
-
-				// time the Parallel tiles
 				gettimeofday(&beforeA , NULL);
 				parallel_getFeaturesActivationRadii(numPrototypes, numCoordinates, d_prototypes, h_floatArr, d_floats, lenFloats, h_intArr, d_ints, lenInts, d_activationRadii, d_features, testFeatures);
 				gettimeofday(&afterA , NULL);
 
 
-				// time the Serial tiles
 				gettimeofday(&beforeB, NULL);
 				getFeaturesActivationRadii(numPrototypes, numCoordinates, h_prototypes, h_floatArr, lenFloats, h_intArr, lenInts, h_activationRadii, features);
 				gettimeofday(&afterB, NULL);
 
 
-				// confirm correct calculation
 				int Errors = 0;
 				for (int j = 0; j < numPrototypes; j++){
 					if (features[j] != testFeatures[j]){
@@ -267,7 +252,6 @@ int main(int argc, char ** argv) {
 				}
 
 
-				// compute time comparison
 				double timeTakenA = time_diff(beforeA , afterA);
 				sumA += timeTakenA;
 
@@ -280,7 +264,6 @@ int main(int argc, char ** argv) {
 					maxTimeTrialA = trial;
 				}
 
-				//compute time comparison
 				double timeTakenB = time_diff(beforeB , afterB);
 				sumB += timeTakenB;
 
@@ -299,7 +282,6 @@ int main(int argc, char ** argv) {
 			cudaFree(d_prototypes);
 			cudaFree(d_activationRadii);
 
-			// compute the average time for each scenario
 			avgTimeA= sumA/numTrials;
 			avgTimeB = sumB/numTrials;
 
